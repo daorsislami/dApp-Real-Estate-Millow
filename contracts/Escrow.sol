@@ -28,6 +28,11 @@ contract Escrow {
         _;
     }
 
+    modifier onlyInspector() {
+        require(msg.sender == inspector, "Only inspector can call this method");
+        _;
+    }
+
     // This is a Solidity data structure
     // uint it's an unsigned integer so this will be like an NFT id, and bool value will be like true or false
     // The thing is we need to keep track if an NFT is listed to kind of like mark it to true if it's listed
@@ -37,6 +42,10 @@ contract Escrow {
     mapping(uint256 => uint256) public purchasePrice; // The amount of Cryptocurrency so an Ether to indicate the costs for the house
     mapping(uint256 => uint256) public escrowAmount; // It's gonna hold the id of NFT and the escrow amount
     mapping(uint256 => address) public buyer; // Holds information for NFT Id and the address of the buyer
+    mapping(uint256 => bool) public inspectionPassed; // uint256 -> PropertyID, bool -> it's true or false whether the inspection has passed or not
+
+
+    mapping(uint256 => mapping(address => bool)) public approval; // the key is NFT, as value is going to be the address of the person who approved it and whether that's true or false
 
     constructor(
         address _nftAddress, 
@@ -80,11 +89,25 @@ contract Escrow {
         require(msg.value >= escrowAmount[_nftID]);
     }
 
+
+    // Update Inpsection Status (only inspector)
+    function updateInspectionStatus(uint256 _nftID, bool _passed) public onlyInspector{
+        inspectionPassed[_nftID] = _passed;
+    }
+
+
+    // Approve Sale
+    function approveSale(uint256 _nftID) public  {
+        approval[_nftID][msg.sender] = true;
+    }
+
+
     // This is whats it's gonna let smart contract actually receive Ether. e.g Lender could send funds to the smart contracts and increase the balance you need this in order 
     // to accept ether to the contract
     receive() external payable {
-        
+
     }
+
 
     // Get the current Ether balance for this contract
     function getBalance() public view returns(uint256) {
