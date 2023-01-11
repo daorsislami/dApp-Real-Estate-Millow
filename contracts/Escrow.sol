@@ -109,6 +109,46 @@ contract Escrow {
     }
 
 
+    // Finalize Sale
+    // -> Require inspection status (add more items here, like appraisal)
+    // -> Require sale to be authorized
+    // -> Requre funds to be correct amount
+    // -> Transfer NFT to buyer
+    // -> Transfer Funds to Seller
+    function finalizeSale(uint256 _nftID) public {
+        require(inspectionPassed[_nftID]);
+     
+        // Require approval from multiple parties
+        require(approval[_nftID][buyer[_nftID]]); // the NFT id and the buyer of the NFT id
+        require(approval[_nftID][seller]); // Approval of seller address
+        require(approval[_nftID][lender]); // Approval of lender address
+        
+        require(address(this).balance >= purchasePrice[_nftID]);
+
+        // Remove the NFT from isListed
+        isListed[_nftID] = false;
+
+        // Send Ether to the seller
+        // call{} -> Is a function that we can use to send any message we want to to that address but we'll send Ether in this case
+        (bool success, ) = payable(seller).call{value: address(this).balance}("");
+        require(success);
+
+        // Now transfer NFT ownership to the buyer
+        IERC721(nftAddress).transferFrom(address(this), buyer[_nftID], _nftID);
+    }
+
+
+    // TODO: Learn what's going on here
+    // Cancel Sale (handle earnest deposit or down payment)
+    // -> If inspection status is not approved, then refund, otherwise send to seller
+    function cancelSale(uint256 _nftID) public {
+        if(inspectionPassed[_nftID] == false) {
+            payable(buyer[_nftID]).transfer(address(this).balance);
+        } else {
+            payable(seller).transfer(address(this).balance);
+        }
+    }
+
     // Get the current Ether balance for this contract
     function getBalance() public view returns(uint256) {
         return address(this).balance;

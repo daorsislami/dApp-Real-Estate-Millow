@@ -127,4 +127,39 @@ describe('Escrow', () => {
             expect(await escrow.approval(1, lender.address)).to.be.equal(true);
         })
     })
+
+    describe('Sale', async () => {
+        // before each sell we want somethings to be required
+        beforeEach(async () => {
+            let transaction = await escrow.connect(buyer).depositEarnest(1, { value: tokens(5) });
+            await transaction.wait();
+
+            transaction = await escrow.connect(inspector).updateInspectionStatus(1, true);
+            await transaction.wait();
+
+            transaction = await escrow.connect(buyer).approveSale(1);
+            await transaction.wait();
+
+            transaction = await escrow.connect(seller).approveSale(1);
+            await transaction.wait();
+
+            transaction = await escrow.connect(lender).approveSale(1);
+            await transaction.wait();
+
+            // Ascend more money from the lender to the smart contract to fund the deal
+            await lender.sendTransaction({ to: escrow.address, value: tokens(5) });
+
+            // Now finalize the Sale
+            transaction = await escrow.connect(seller).finalizeSale(1);
+            await transaction.wait();
+        })
+
+        it('Updates the ownership', async () => {
+            expect(await realEstate.ownerOf(1)).to.be.equal(buyer.address);
+        })
+
+        it('Update balance', async () => {
+            expect(await escrow.getBalance()).to.be.equal(0);
+        })
+    })
 })
