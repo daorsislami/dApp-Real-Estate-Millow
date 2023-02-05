@@ -21,7 +21,9 @@ function App() {
   const [escrow, setEscrow] = useState(null);
   const [account, setAccount] = useState(null);
 
-  const [homes, setHomes] = useState(null);
+  const [homes, setHomes] = useState([]);
+  const [home, setHome] = useState({});
+  const [toggle, setToggle] = useState(false);
 
   const loadBlockchainData = async () => {
     // Pull connection from Metamask
@@ -71,6 +73,11 @@ function App() {
     loadBlockchainData();
   }, [])
 
+  const togglePop = (home) => {
+    setHome(home);
+    toggle ? setToggle(false) : setToggle(true);
+  }
+
   return (
     <div>
 
@@ -84,8 +91,7 @@ function App() {
 
         <div className='cards'>
           {homes ? homes.map((home, index) => (
-
-            <div className='card' key={index}>
+            <div className='card' key={index} onClick={() => togglePop(home)}>
               <div className='card__image'>
                 <img src={home.image} alt='Home'/>
               </div>
@@ -105,10 +111,12 @@ function App() {
           )) : ''}
 
           
-          
         </div>
-
       </div>
+
+      {toggle && (
+        <Home home={home} provider={provider} account={account} escrow={escrow} togglePop={togglePop} />
+      )}
 
     </div>
   );
