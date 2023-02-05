@@ -30,13 +30,13 @@ function App() {
     console.log('PROVIDER: ', provider);
 
 
-    // Get our accounts
-    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
 
-    // Set account
-    setAccount(accounts[0]);
-
-    console.log(accounts[0]);
+    // If the account gets changed execute the code down below
+    window.ethereum.on('accountsChanged', async () => {
+      const accounts = await window.ethereum.request({method: 'eth_requestAccounts' });
+      const account = ethers.utils.getAddress(accounts[0]);
+      setAccount(account);
+    })
   }
 
   useEffect(() => {
@@ -46,6 +46,7 @@ function App() {
   return (
     <div>
 
+      <Navigation account={account} setAccount={setAccount}/>
       <div className='cards__section'>
 
         <h3>Welcome to Millow!</h3>
