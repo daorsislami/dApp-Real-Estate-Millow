@@ -7,6 +7,66 @@ import React, { Component }  from 'react';
 
 const Home = ({ home, provider, escrow, togglePop }) => {
 
+    const[hasBought, setHasBought] = useState(false);
+    const[hasLended, setHasLended] = useState(false);
+    const[hasInspected, setHasInspected] = useState(false);
+    const[hasSold, setHasSold] = useState(false);
+
+    const[buyer, setBuyer] = useState(null);
+    const[lender, setLender] = useState(null);
+    const[inspector, setInspector] = useState(null);
+    const[seller, setSeller] = useState(null);
+
+    const[owner, setOwner] = useState(null);
+
+    // Facilitating the buy
+    const fetchDetails = async () => {
+        // -- Buyer
+        
+        const buyer = await escrow.buyer(home.id);
+        setBuyer(buyer);
+
+        const hasBought = await escrow.approval(home.id, buyer);
+        setHasBought(hasBought);
+
+        // -- Seller
+        
+        const seller = await escrow.seller();
+        setSeller(seller);
+
+        const hasSold = await escrow.approval(home.id, seller);
+        setHasSold(hasSold); 
+
+        // -- Lender
+        
+        const lender = await escrow.lender();
+        setLender(lender);
+
+        const hasLended = await escrow.approval(home.id, lender);
+        setHasLended(hasLended);
+
+        // -- Inspector
+
+        const inspector = await escrow.inspector();
+        setInspector(inspector);
+
+        const hasInspected = await escrow.approval(home.id, inspector);
+        setHasInspected(hasInspected);
+    }
+
+    const fetchOwner = async () => {
+        
+        if(await escrow.isListed(home.id)) return; // make sure the home is listed
+
+        const owner = await escrow.buyer(home.id);
+        setOwner(owner);
+    }
+
+    useEffect(() => {
+        fetchDetails()
+        fetchOwner()
+    }, [hasSold]) // if hasSold changes, it will recall these two functions: fetchDetails() and fetchOwner()
+
     return (
         <div className="home">
             <div className='home__details'>
@@ -24,6 +84,25 @@ const Home = ({ home, provider, escrow, togglePop }) => {
                     <p>{home.address}</p>
                     <h2>{home.attributes[0].value} ETH</h2>
                     
+
+                    {/* {owner ? (
+                        <div className='home__owned'>
+                            Owned by {owner.slice(0,6) + '...' + owner.slice(38, 42)}
+                        </div>
+                    ) : (
+                        <div>
+                            {(account === inspector) ? (
+
+                            ) : (account === lender ) ? (
+
+                            ) : (account === seller) ? (
+
+                            ) : (
+
+                            )}
+                        </div>
+                    ) } */}
+
                     <div>
                         <button className='home__buy'>
                             Buy
