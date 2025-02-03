@@ -1,4 +1,6 @@
 # Real Estate NFT DApp
+In this project I learned about transitioning a real estate we2.0 application to a web3.0.
+Here I got introduced to NFTs, ERC721 tokens, Minting process, writing and deploying smart contracts.
 
 ## Technology Stack & Tools
 
